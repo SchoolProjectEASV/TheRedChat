@@ -1,0 +1,26 @@
+version: "3.8"
+services:
+  redchatservice:
+    build:
+      context: ./Backend
+      dockerfile: TheRedChat/Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - TheRedChat-db
+    restart: always
+    env_file:
+      - .env  # Note: Update this if your .env file is in a different location
+
+  TheRedChat-db:
+    image: mcr.microsoft.com/azure-sql-edge:latest
+    environment:
+      SA_PASSWORD: ${MSSQL_SA_PASSWORD}
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+    volumes:
+      - mssql_data_patient_db:/var/opt/mssql
+
+volumes:
+  mssql_data_patient_db:
