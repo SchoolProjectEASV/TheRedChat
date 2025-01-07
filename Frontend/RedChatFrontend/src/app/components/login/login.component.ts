@@ -1,25 +1,33 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
+import { FormsModule } from '@angular/forms';
+import {ChatComponent} from "../chat/chat.component";
 import {RegisterComponent} from "../register/register.component";
-import {FormsModule} from "@angular/forms"; // Import Router
 
 @Component({
   selector: 'app-login',
   standalone: true,
   imports: [FormsModule],
   templateUrl: './login.component.html',
-  styleUrl: './login.component.css'
+  styleUrls: ['./login.component.css']
 })
 export class LoginComponent {
   username = '';
   password = '';
 
-  constructor(private router: Router) {}
+  constructor(private authService: AuthService, private router: Router) {}
 
   onSubmit() {
     if (this.username && this.password) {
-      alert(`Logging in with Email: ${this.username}`);
-      // Handle login logic here
+      this.authService.login(this.username, this.password).subscribe(
+        () => {
+          this.router.navigate(['/chat']).then(r => ChatComponent);
+        },
+        (error) => {
+          alert('Login failed. Please check your credentials.');
+        }
+      );
     } else {
       alert('Please fill in both username and password.');
     }
