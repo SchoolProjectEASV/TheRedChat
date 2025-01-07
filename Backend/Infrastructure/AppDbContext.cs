@@ -30,7 +30,7 @@ namespace Infrastructure
                 entity.HasOne(f => f.FriendUser)
                       .WithMany()
                       .HasForeignKey(f => f.FriendUserId)
-                      .OnDelete(DeleteBehavior.Cascade);
+                      .OnDelete(DeleteBehavior.Restrict);
             });
 
             builder.Entity<Message>(entity =>
@@ -46,5 +46,6 @@ namespace Infrastructure
                       .OnDelete(DeleteBehavior.Restrict);
             });
         }
+
     }
 }
