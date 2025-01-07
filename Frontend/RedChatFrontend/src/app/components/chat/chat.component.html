@@ -1,0 +1,34 @@
+<div class="chat-app">
+  <div class="chat-window">
+    <div class="chat-header">
+      <h2>{{ selectedFriend ? (selectedFriend.name ? 'Chat with ' + selectedFriend.name : '') : 'Select a friend to start chatting' }}</h2>
+    </div>
+    <div class="chat-messages">
+      <div *ngFor="let message of messages" [class]="message.sender === 'You' ? 'my-message' : 'friend-message'">
+        <p>
+          <span class="sender">{{ message.sender }}:</span>
+          {{ message.text }}
+        </p>
+      </div>
+    </div>
+    <div class="chat-input" *ngIf="selectedFriend">
+      <input [(ngModel)]="newMessage" [placeholder]="messagesPlaceholder" />
+      <button (click)="sendMessage()">Send</button>
+    </div>
+  </div>
+
+  <div class="sidebar">
+    <div class="friend-list">
+      <h3>{{ friendsListTitle }}</h3>
+      <ul>
+        <li *ngFor="let friend of friends" (click)="selectFriend(friend)">
+          {{ friend.name }}
+        </li>
+      </ul>
+    </div>
+    <div class="add-friend">
+      <input [(ngModel)]="newFriend" [placeholder]="addFriendPlaceholder" />
+      <button (click)="addFriend()">Add</button>
+    </div>
+  </div>
+</div>
