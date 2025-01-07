@@ -22,5 +22,15 @@ services:
     volumes:
       - mssql_data_redchat_db:/var/opt/mssql
 
+  redchat-frontend:
+    build:
+      context: ./Frontend/RedChatFrontend
+      dockerfile: Dockerfile
+    ports:
+      - "4200:4200"
+    depends_on:
+      - redchatservice
+    restart: always
+
 volumes:
   mssql_data_redchat_db:
