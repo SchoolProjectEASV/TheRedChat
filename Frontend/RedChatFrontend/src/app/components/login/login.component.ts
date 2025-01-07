@@ -1,30 +1,31 @@
 import { Component } from '@angular/core';
-import {FormsModule} from "@angular/forms";
+import { Router } from '@angular/router';
+import {RegisterComponent} from "../register/register.component";
+import {FormsModule} from "@angular/forms"; // Import Router
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [
-    FormsModule
-  ],
+  imports: [FormsModule],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
 export class LoginComponent {
-  email = '';
+  username = '';
   password = '';
 
+  constructor(private router: Router) {}
+
   onSubmit() {
-    if (this.email && this.password) {
-      alert(`Logging in with Email: ${this.email}`);
+    if (this.username && this.password) {
+      alert(`Logging in with Email: ${this.username}`);
       // Handle login logic here
     } else {
-      alert('Please fill in both email and password.');
+      alert('Please fill in both username and password.');
     }
   }
 
   onRegister() {
-    alert('Redirecting to registration...');
+    this.router.navigate(['/register']).then(r => RegisterComponent);
   }
-
 }
