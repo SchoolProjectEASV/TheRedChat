@@ -10,7 +10,7 @@ services:
       - TheRedChat-db
     restart: always
     env_file:
-      - .env  # Note: Update this if your .env file is in a different location
+      - .env
 
   TheRedChat-db:
     image: mcr.microsoft.com/azure-sql-edge:latest
@@ -20,7 +20,7 @@ services:
     ports:
       - "1433:1433"
     volumes:
-      - mssql_data_patient_db:/var/opt/mssql
+      - mssql_data_redchat_db:/var/opt/mssql
 
 volumes:
-  mssql_data_patient_db:
+  mssql_data_redchat_db:

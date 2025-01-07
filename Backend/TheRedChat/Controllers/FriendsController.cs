@@ -23,6 +23,7 @@ namespace MyRealtimeApp.Api.Controllers
             _friendService = friendService;
         }
 
+        [Authorize]
         [HttpPost("add")]
         public async Task<IActionResult> AddFriend([FromBody] AddFriendDto dto)
         {
@@ -41,6 +42,7 @@ namespace MyRealtimeApp.Api.Controllers
             }
         }
 
+        [Authorize]
         [HttpGet("list")]
         public async Task<IActionResult> GetFriends()
         {
@@ -63,6 +65,7 @@ namespace MyRealtimeApp.Api.Controllers
             return Ok(response);
         }
 
+        [Authorize]
         [HttpDelete("remove")]
         public async Task<IActionResult> RemoveFriend([FromBody] RemoveFriendDto dto)
         {

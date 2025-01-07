@@ -34,14 +34,22 @@ namespace Core
             if (existing != null)
                 throw new Exception("Already friends.");
 
-
+            // Add friendship in both directions
             var friend = new Friend
             {
                 UserId = userId,
                 FriendUserId = friendUserId
             };
+            var reverseFriend = new Friend
+            {
+                UserId = friendUserId,
+                FriendUserId = userId
+            };
             await _friendRepo.AddFriend(friend);
+            await _friendRepo.AddFriend(reverseFriend);
         }
+
+
 
         public async Task<IEnumerable<User>> GetFriends(Guid userId)
         {
@@ -53,10 +61,13 @@ namespace Core
         public async Task RemoveFriend(Guid userId, Guid friendUserId)
         {
             var relation = await _friendRepo.GetFriendRelation(userId, friendUserId);
-            if (relation == null)
+            var reverseRelation = await _friendRepo.GetFriendRelation(friendUserId, userId);
+
+            if (relation == null || reverseRelation == null)
                 throw new Exception("Friend relationship does not exist.");
 
             await _friendRepo.RemoveFriend(relation);
+            await _friendRepo.RemoveFriend(reverseRelation);
         }
     }
 }
