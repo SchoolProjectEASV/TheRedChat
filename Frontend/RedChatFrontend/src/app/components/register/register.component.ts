@@ -21,11 +21,16 @@ export class RegisterComponent {
     if (this.username && this.password && this.confirmPassword) {
       if (this.password === this.confirmPassword) {
         this.authService.register(this.username, this.password).subscribe(
-          () => {
-            alert('Registration successful. You can now log in.');
-            this.router.navigate(['/']);
+          (response) => {
+            if (response && response.message) {
+              alert(response.message);
+              this.router.navigate(['/']);
+            } else {
+              alert('Registration successful, but no confirmation message received.');
+            }
           },
           (error) => {
+            console.error('Registration error:', error);
             alert('Registration failed. Please try again.');
           }
         );

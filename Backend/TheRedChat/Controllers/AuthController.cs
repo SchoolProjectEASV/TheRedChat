@@ -37,7 +37,7 @@ namespace MyRealtimeApp.Api.Controllers
             if (!result.Succeeded)
                 return BadRequest(result.Errors);
 
-            return Ok("User registered successfully.");
+            return Ok(new { message = "User registered successfully." });
         }
 
         [HttpPost("login")]
@@ -52,8 +52,15 @@ namespace MyRealtimeApp.Api.Controllers
                 return Unauthorized("Invalid username or password.");
 
             var token = GenerateJwtToken(user);
-            return Ok(new { token });
+            var userId = user.Id;
+
+            return Ok(new
+            {
+                token,
+                userId
+            });
         }
+
 
         private string GenerateJwtToken(User user)
         {

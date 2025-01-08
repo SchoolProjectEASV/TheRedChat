@@ -25,6 +25,7 @@ namespace MyRealtimeApp.Api.Hubs
             if (!Guid.TryParse(senderIdStr, out var senderId))
                 return;
 
+            // Ensure the users are friends
             var isFriend = await _dbContext.Friends
                 .AnyAsync(f => f.UserId == senderId && f.FriendUserId == receiverId);
             if (!isFriend)
@@ -41,18 +42,33 @@ namespace MyRealtimeApp.Api.Hubs
             _dbContext.Messages.Add(message);
             await _dbContext.SaveChangesAsync();
 
-            await Clients.User(receiverId.ToString())
-                .SendAsync("ReceiveMessage", senderId, content, message.SentAt);
+            await Clients.Group(receiverId.ToString())
+                .SendAsync("ReceiveMessage", senderId, receiverId, content, message.SentAt);
+
+            await Clients.Caller
+                .SendAsync("ReceiveMessage", senderId, receiverId, content, message.SentAt);
         }
 
         public override async Task OnConnectedAsync()
         {
             var userId = Context.User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (Guid.TryParse(userId, out var guid))
+            if (!string.IsNullOrEmpty(userId))
             {
+                await Groups.AddToGroupAsync(Context.ConnectionId, userId);
             }
 
             await base.OnConnectedAsync();
+        }
+
+        public override async Task OnDisconnectedAsync(Exception? exception)
+        {
+            var userId = Context.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!string.IsNullOrEmpty(userId))
+            {
+                await Groups.RemoveFromGroupAsync(Context.ConnectionId, userId);
+            }
+
+            await base.OnDisconnectedAsync(exception);
         }
     }
 }

@@ -1,11 +1,19 @@
-import { ApplicationConfig } from '@angular/core';
+import { ApplicationConfig, importProvidersFrom } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { provideHttpClient } from '@angular/common/http';
-import { routes } from './app.routes'; // Make sure this path is correct
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
+import { routes } from './app.routes'; 
+import { AuthInterceptor } from './interceptor/auth.interceptor'; 
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
-    provideHttpClient()
+    importProvidersFrom(
+      HttpClientModule 
+    ),
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: AuthInterceptor,
+      multi: true 
+    }
   ]
 };
