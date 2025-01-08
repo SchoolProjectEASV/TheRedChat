@@ -32,7 +32,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   constructor(
     private friendsService: FriendsService,
     private chatService: ChatService,
-    private authService: AuthService
+    public authService: AuthService
   ) {}
 
   ngOnInit() {
@@ -67,16 +67,17 @@ export class ChatComponent implements OnInit, OnDestroy {
     const userId = this.authService.getUserId();
     this.chatService.getMessagesWithFriend(friend.id).subscribe(
       (historicalMessages) => {
-        const allMessages = [
+        const liveMessages = this.chatService.messages$.value.filter(
+          (msg) =>
+            (msg.senderId === userId && msg.receiverId === friend.id) ||
+            (msg.senderId === friend.id && msg.receiverId === userId) &&
+            !historicalMessages.some((hm) => hm.Id === msg.Id) // Prevent duplicates
+        );
+  
+        this.messages = [
           ...historicalMessages,
-          ...this.chatService.messages$.value.filter(
-            (msg) =>
-              (msg.senderId === userId && msg.receiverId === friend.id) ||
-              (msg.senderId === friend.id && msg.receiverId === userId)
-          ),
-        ];
-        
-        this.messages = allMessages.sort((a, b) => new Date(a.sentAt).getTime() - new Date(b.sentAt).getTime());
+          ...liveMessages,
+        ].sort((a, b) => new Date(a.sentAt).getTime() - new Date(b.sentAt).getTime());
       },
       (error) => {
         console.error('Failed to fetch messages:', error);
@@ -84,6 +85,7 @@ export class ChatComponent implements OnInit, OnDestroy {
       }
     );
   }
+  
 
   addFriend() {
     if (this.newFriend.trim()) {
@@ -115,14 +117,10 @@ export class ChatComponent implements OnInit, OnDestroy {
   sendMessage() {
     if (this.selectedFriend && this.newMessage.trim()) {
       this.chatService.sendMessage(this.selectedFriend.id, this.newMessage);
-      this.messages.push({
-        senderId: 'You',
-        receiverId: this.selectedFriend.id,
-        content: this.newMessage,
-        sentAt: new Date(),
-      });
       this.newMessage = '';
     }
   }
+  
+  
   
 }

@@ -8,16 +8,16 @@
     <div class="chat-messages">
       <div 
         *ngFor="let message of messages" 
-        [class]="message.senderId === 'You' ? 'my-message' : 'friend-message'">
+        [class]="message.senderId === authService.getUserId() ? 'my-message' : 'friend-message'">
         <p>
           <span class="sender">
-            {{ message.senderId === 'You' ? 'You' : selectedFriend.username }}:
+            {{ message.senderId === authService.getUserId() ? 'You' : selectedFriend.username }}:
           </span>
           {{ message.content }}
         </p>
         <small class="message-time">{{ message.sentAt | date: 'short' }}</small>
       </div>
-    </div>
+    </div>    
     <div class="chat-input" *ngIf="selectedFriend">
       <input [(ngModel)]="newMessage" [placeholder]="messagesPlaceholder" />
       <button (click)="sendMessage()">Send</button>

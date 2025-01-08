@@ -3,7 +3,6 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import jwt_decode from 'jwt-decode';
 
 
 @Injectable({
@@ -33,8 +32,12 @@ export class AuthService {
     );
   }
   
-  getUserId(): string | null {
-    return localStorage.getItem('userId');
+  getUserId(): string {
+    const userId = localStorage.getItem('userId');
+    if (!userId) {
+      throw new Error('User ID is not available in localStorage.');
+    }
+    return userId;
   }
 
   logout(): void {
