@@ -102,7 +102,6 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// Configure Middleware
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

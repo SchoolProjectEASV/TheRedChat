@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.IdentityModel.Tokens;
 using Models.DTOs;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MyRealtimeApp.Api.Controllers
 {
@@ -31,9 +32,11 @@ namespace MyRealtimeApp.Api.Controllers
             var user = new User
             {
                 UserName = dto.Username,
+                PublicKey = dto.PublicKey
             };
 
             var result = await _userManager.CreateAsync(user, dto.Password);
+
             if (!result.Succeeded)
                 return BadRequest(result.Errors);
 
@@ -59,6 +62,21 @@ namespace MyRealtimeApp.Api.Controllers
                 token,
                 userId
             });
+        }
+
+        [Authorize]
+        [HttpGet("keys/{userId}")]
+        public async Task<IActionResult> GetPublicKey(Guid userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+
+            if (user == null)
+                return NotFound(new { message = "User not found" });
+
+            if (string.IsNullOrEmpty(user.PublicKey))
+                return NotFound(new { message = "Public key not found for user" });
+
+            return Ok(new { publicKey = user.PublicKey });
         }
 
 

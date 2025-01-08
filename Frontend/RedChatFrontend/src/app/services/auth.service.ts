@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-
+import { EncryptionService } from './encryption.service';
 
 @Injectable({
   providedIn: 'root'
@@ -13,10 +13,24 @@ export class AuthService {
   private apiUrl = 'http://localhost:8080/api/auth';
   public isAuthenticated$ = new BehaviorSubject<boolean>(this.hasToken());
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(
+    private http: HttpClient, 
+    private router: Router,
+    private encryptionService: EncryptionService
+  ) {}
 
   register(username: string, password: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/register`, { username, password });
+    const { privateKeyPem, publicKeyPem } = this.encryptionService.generateNewKeyPair();
+    return this.http.post(`${this.apiUrl}/register`, { 
+      username, 
+      password,
+      publicKey: publicKeyPem 
+    }).pipe(
+      map(response => ({
+        ...response,
+        privateKey: privateKeyPem
+      }))
+    );
   }
 
   login(username: string, password: string): Observable<any> {

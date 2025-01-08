@@ -1,23 +1,64 @@
 <div class="register-container">
-  <h2>Register</h2>
-  <form (submit)="onSubmit()">
-    <div class="form-group">
-      <label for="username">Username</label>
-      <input type="text" id="username" [(ngModel)]="username" name="username" required placeholder="Enter your username" />
+  <!-- Registration Form -->
+  <div *ngIf="!showKeyBackup">
+    <h2>Register</h2>
+    <form (submit)="onSubmit()">
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" [(ngModel)]="username" name="username" required placeholder="Enter your username" [disabled]="isRegistering" />
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" [(ngModel)]="password" name="password" required placeholder="Enter a password" [disabled]="isRegistering" />
+      </div>
+
+      <div class="form-group">
+        <label for="confirmPassword">Confirm Password</label>
+        <input type="password" id="confirmPassword" [(ngModel)]="confirmPassword" name="confirmPassword" required placeholder="Confirm your password" [disabled]="isRegistering" />
+      </div>
+
+      <div class="error-message" *ngIf="errorMessage">
+        {{ errorMessage }}
+      </div>
+
+      <div class="actions">
+        <button type="submit" class="submit-btn" [disabled]="isRegistering">
+          {{ isRegistering ? 'Registering...' : 'Register' }}
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <div *ngIf="showKeyBackup" class="key-backup-container">
+    <h2>Save Your Private Key</h2>
+    <p class="warning">
+      This is your private key. You will need it to decrypt messages. 
+      Save it securely - it cannot be recovered if lost!
+    </p>
+    
+    <div class="key-display">
+      <pre class="key-text">{{ privateKey }}</pre>
     </div>
 
-    <div class="form-group">
-      <label for="password">Password</label>
-      <input type="password" id="password" [(ngModel)]="password" name="password" required placeholder="Enter a password" />
+    <div class="key-actions">
+      <button (click)="downloadPrivateKey()" class="action-btn">
+        Download Key
+      </button>
+      <button (click)="copyToClipboard()" class="action-btn">
+        Copy Key
+      </button>
     </div>
 
-    <div class="form-group">
-      <label for="confirmPassword">Confirm Password</label>
-      <input type="password" id="confirmPassword" [(ngModel)]="confirmPassword" name="confirmPassword" required placeholder="Confirm your password" />
+    <div class="confirmation">
+      <label>
+        <input type="checkbox" [(ngModel)]="hasBackedUpKey" name="backupConfirm">
+        I have saved my private key and understand it cannot be recovered if lost
+      </label>
     </div>
 
-    <div class="actions">
-      <button type="submit" class="submit-btn">Register</button>
-    </div>
-  </form>
+    <button (click)="continueToLogin()" class="continue-btn" [disabled]="!hasBackedUpKey">
+      Continue to Login
+    </button>
+  </div>
 </div>
