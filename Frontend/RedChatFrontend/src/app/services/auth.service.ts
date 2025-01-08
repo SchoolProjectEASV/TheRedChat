@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { LoginComponent } from "../components/login/login.component";
+
 
 @Injectable({
   providedIn: 'root'
@@ -22,19 +22,28 @@ export class AuthService {
   login(username: string, password: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/login`, { username, password }).pipe(
       map((response: any) => {
-        if (response.token) {
+        if (response.token && response.userId) {
           localStorage.setItem(this.tokenKey, response.token);
+          localStorage.setItem('userId', response.userId);
           this.isAuthenticated$.next(true);
         }
         return response;
       })
     );
   }
+  
+  getUserId(): string {
+    const userId = localStorage.getItem('userId');
+    if (!userId) {
+      throw new Error('User ID is not available in localStorage.');
+    }
+    return userId;
+  }
 
   logout(): void {
     localStorage.removeItem(this.tokenKey);
     this.isAuthenticated$.next(false);
-    this.router.navigate(['/login']).then(r => LoginComponent);
+    this.router.navigate(['/login']);
   }
 
   getToken(): string | null {
