@@ -4,6 +4,9 @@ import { Router } from '@angular/router';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { EncryptionService } from './encryption.service';
+import { jwtDecode } from 'jwt-decode';
+import { JwtPayload } from '../models/jwtPayload.model';
+
 
 @Injectable({
   providedIn: 'root'
@@ -43,7 +46,6 @@ export class AuthService {
       map((response: any) => {
         if (response.token && response.userId) {
           localStorage.setItem(this.tokenKey, response.token);
-          localStorage.setItem('userId', response.userId);
           this.isAuthenticated$.next(true);
         }
         return response;
@@ -52,11 +54,22 @@ export class AuthService {
   }
   
   getUserId(): string {
-    const userId = localStorage.getItem('userId');
-    if (!userId) {
-      throw new Error('User ID is not available in localStorage.');
+    const token = this.getToken();
+    if (!token) {
+      throw new Error('No authentication token found');
     }
-    return userId;
+
+    try {
+      const decodedToken = jwtDecode<JwtPayload>(token);
+      const userId = decodedToken['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
+      if (!userId) {
+        throw new Error('User ID not found in token payload');
+      }
+      
+      return userId;
+    } catch (error) {
+      throw new Error('Failed to parse user ID from token');
+    }
   }
 
   logout(): void {
