@@ -1,3 +1,10 @@
+body, html {
+  margin: 0;
+  padding: 0;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
 .register-container {
   width: 100%;
   max-width: 400px;
@@ -7,6 +14,15 @@
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   font-family: Arial, sans-serif;
+  box-sizing: border-box;
+}
+
+h1.project-title {
+  text-align: center;
+  color: #d32f2f;
+  font-size: 36px;
+  font-weight: bold;
+  margin-bottom: 20px;
 }
 
 .register-container h2 {
@@ -29,8 +45,8 @@
 
 .form-group input {
   width: 100%;
-  padding: 10px;
-  font-size: 16px;
+  padding: 8px 12px;
+  font-size: 14px;
   color: #333;
   border: 1px solid #ccc;
   border-radius: 4px;
@@ -47,8 +63,8 @@
   text-align: center;
 }
 
-.submit-btn, .action-btn, .continue-btn {
-  padding: 12px 20px;
+.submit-btn {
+  padding: 10px 20px;
   background-color: #4caf50;
   color: white;
   font-size: 16px;
@@ -59,73 +75,13 @@
   transition: background-color 0.3s ease;
 }
 
-.submit-btn:hover, .action-btn:hover, .continue-btn:hover {
+.submit-btn:hover {
   background-color: #45a049;
 }
 
-.submit-btn:disabled, .action-btn:disabled, .continue-btn:disabled {
+.submit-btn:disabled {
   background-color: #cccccc;
   cursor: not-allowed;
-}
-
-/* Key backup specific styles */
-.warning {
-  color: #dc3545;
-  background: #fff3f3;
-  padding: 10px;
-  border-radius: 4px;
-  margin: 15px 0;
-  font-size: 14px;
-  border-left: 4px solid #dc3545;
-}
-
-.key-display {
-  background: #fff;
-  padding: 15px;
-  border-radius: 4px;
-  margin: 15px 0;
-  border: 1px solid #ccc;
-}
-
-.key-text {
-  word-break: break-all;
-  white-space: pre-wrap;
-  margin: 0;
-  font-family: monospace;
-  font-size: 14px;
-  color: #333;
-}
-
-.key-actions {
-  display: flex;
-  gap: 10px;
-  margin: 15px 0;
-}
-
-.action-btn {
-  flex: 1;
-  background-color: #5b9bd5;
-}
-
-.action-btn:hover {
-  background-color: #4a8bc2;
-}
-
-.confirmation {
-  margin: 15px 0;
-}
-
-.confirmation label {
-  display: flex;
-  gap: 10px;
-  align-items: flex-start;
-  font-size: 14px;
-  color: #555;
-}
-
-.confirmation input[type="checkbox"] {
-  margin-top: 2px;
-  width: auto;
 }
 
 .error-message {
@@ -134,13 +90,81 @@
   font-size: 14px;
 }
 
-@media (max-width: 480px) {
-  .register-container {
-    margin: 20px;
-    padding: 15px;
-  }
+.key-backup-container {
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  font-family: Arial, sans-serif;
+}
 
-  .register-container h2 {
-    font-size: 20px;
-  }
+.key-backup-container h2 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.key-backup-container p.warning {
+  font-size: 16px;
+  color: #d9534f;
+  margin-bottom: 20px;
+}
+
+.key-display {
+  background-color: #f0f0f0;
+  padding: 10px;
+  border-radius: 4px;
+  overflow-x: auto;
+  margin-bottom: 20px;
+}
+
+.key-text {
+  font-family: monospace;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.key-actions button.action-btn {
+  padding: 10px 15px;
+  font-size: 14px;
+  color: white;
+  background-color: #5b9bd5;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+.key-actions button.action-btn:last-child {
+  margin-right: 0;
+}
+
+.key-actions button.action-btn:hover {
+  background-color: #4a8cc7;
+}
+
+.confirmation {
+  margin-top: 15px;
+}
+
+.confirmation label {
+  font-size: 14px;
+  color: #555;
+}
+
+.continue-btn {
+  padding: 10px 20px;
+  background-color: #4caf50;
+  color: white;
+  font-size: 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 15px;
+}
+
+.continue-btn:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
 }
