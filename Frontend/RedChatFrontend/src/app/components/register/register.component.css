@@ -47,7 +47,7 @@
   text-align: center;
 }
 
-.submit-btn {
+.submit-btn, .action-btn, .continue-btn {
   padding: 12px 20px;
   background-color: #4caf50;
   color: white;
@@ -59,8 +59,79 @@
   transition: background-color 0.3s ease;
 }
 
-.submit-btn:hover {
+.submit-btn:hover, .action-btn:hover, .continue-btn:hover {
   background-color: #45a049;
+}
+
+.submit-btn:disabled, .action-btn:disabled, .continue-btn:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+/* Key backup specific styles */
+.warning {
+  color: #dc3545;
+  background: #fff3f3;
+  padding: 10px;
+  border-radius: 4px;
+  margin: 15px 0;
+  font-size: 14px;
+  border-left: 4px solid #dc3545;
+}
+
+.key-display {
+  background: #fff;
+  padding: 15px;
+  border-radius: 4px;
+  margin: 15px 0;
+  border: 1px solid #ccc;
+}
+
+.key-text {
+  word-break: break-all;
+  white-space: pre-wrap;
+  margin: 0;
+  font-family: monospace;
+  font-size: 14px;
+  color: #333;
+}
+
+.key-actions {
+  display: flex;
+  gap: 10px;
+  margin: 15px 0;
+}
+
+.action-btn {
+  flex: 1;
+  background-color: #5b9bd5;
+}
+
+.action-btn:hover {
+  background-color: #4a8bc2;
+}
+
+.confirmation {
+  margin: 15px 0;
+}
+
+.confirmation label {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 14px;
+  color: #555;
+}
+
+.confirmation input[type="checkbox"] {
+  margin-top: 2px;
+  width: auto;
+}
+
+.error-message {
+  color: #dc3545;
+  margin: 10px 0;
+  font-size: 14px;
 }
 
 @media (max-width: 480px) {

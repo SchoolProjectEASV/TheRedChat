@@ -5,6 +5,8 @@ import { FriendsService } from '../../services/friends.service';
 import { ChatService } from '../../services/chat.service';
 import { AuthService } from '../../services/auth.service';
 import { Message } from '../../models/message.model'
+import { EncryptionService } from '../../services/encryption.service';
+import { KeyInputDialogComponent } from '../keyinputdialog/keyinputdialog.component';
 
 
 @Component({
@@ -14,12 +16,14 @@ import { Message } from '../../models/message.model'
     FormsModule,
     NgForOf,
     NgIf,
-    DatePipe
+    DatePipe,
+    KeyInputDialogComponent  
   ],
   templateUrl: './chat.component.html',
   styleUrls: ['./chat.component.css']
 })
 export class ChatComponent implements OnInit, OnDestroy {
+  showKeyDialog = false;
   friends: any[] = [];
   newFriend = '';
   selectedFriend: any | null = null;
@@ -32,10 +36,19 @@ export class ChatComponent implements OnInit, OnDestroy {
   constructor(
     private friendsService: FriendsService,
     private chatService: ChatService,
-    public authService: AuthService
+    public authService: AuthService,
+    private encryptionService: EncryptionService
   ) {}
 
-  ngOnInit() {
+  async ngOnInit() {
+    if (!this.encryptionService.isInitialized()) {
+      this.showKeyDialog = true;
+      return;
+    }
+    await this.initializeChat();
+  }
+
+  private async initializeChat() {
     const token = this.authService.getToken();
     if (token) {
       this.chatService.startConnection(token);
@@ -71,7 +84,7 @@ export class ChatComponent implements OnInit, OnDestroy {
           (msg) =>
             (msg.senderId === userId && msg.receiverId === friend.id) ||
             (msg.senderId === friend.id && msg.receiverId === userId) &&
-            !historicalMessages.some((hm) => hm.Id === msg.Id) // Prevent duplicates
+            !historicalMessages.some((hm) => hm.Id === msg.Id)
         );
   
         this.messages = [
@@ -85,7 +98,11 @@ export class ChatComponent implements OnInit, OnDestroy {
       }
     );
   }
-  
+
+  onKeySubmitted() {
+    this.showKeyDialog = false;
+    this.initializeChat();
+  }
 
   addFriend() {
     if (this.newFriend.trim()) {

@@ -1,0 +1,38 @@
+<div class="key-dialog-overlay">
+    <div class="key-dialog">
+      <h2>Enter Your Private Key</h2>
+      <p>Please enter your private key to decrypt messages.</p>
+
+      <div class="input-methods">
+        <!-- Text input -->
+        <div class="form-group">
+          <label>Paste your private key:</label>
+          <textarea
+            [(ngModel)]="privateKey"
+            rows="5"
+            placeholder="-----BEGIN PRIVATE KEY-----..."
+          ></textarea>
+        </div>
+
+        <!-- File input -->
+        <div class="form-group">
+          <label>Or upload your private key file:</label>
+          <input
+            type="file"
+            (change)="handleFileUpload($event)"
+            accept=".txt"
+          >
+        </div>
+      </div>
+
+      <div class="error" *ngIf="error">
+        {{ error }}
+      </div>
+
+      <div class="actions">
+        <button (click)="submitKey()" [disabled]="!privateKey">
+          Submit Key
+        </button>
+      </div>
+    </div>
+  </div>

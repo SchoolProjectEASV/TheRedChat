@@ -10,6 +10,7 @@ namespace Models
 {
     public class User: IdentityUser<Guid>
     {
+        public string PublicKey { get; set; }
         public ICollection<Friend> Friends { get; set; }
     }
 }

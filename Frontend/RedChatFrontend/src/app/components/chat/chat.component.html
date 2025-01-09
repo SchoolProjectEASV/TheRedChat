@@ -1,3 +1,9 @@
+<!-- Key input dialog overlay -->
+<app-keyinputdialog 
+  *ngIf="showKeyDialog"
+  (keySubmitted)="onKeySubmitted()"
+></app-keyinputdialog>
+
 <div class="chat-app">
   <div class="chat-window">
     <div class="chat-header">
