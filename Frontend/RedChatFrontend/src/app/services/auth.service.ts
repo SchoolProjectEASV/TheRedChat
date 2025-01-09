@@ -42,16 +42,19 @@ export class AuthService {
 
 
   login(username: string, password: string): Observable<any> {
+    this.logout(); 
+    
     return this.http.post(`${this.apiUrl}/login`, { username, password }).pipe(
       map((response: any) => {
-        if (response.token && response.userId) {
+        if (response.token) {
           localStorage.setItem(this.tokenKey, response.token);
           this.isAuthenticated$.next(true);
         }
         return response;
       })
     );
-  }
+}
+  
   
   getUserId(): string {
     const token = this.getToken();
@@ -83,6 +86,7 @@ export class AuthService {
   }
 
   hasToken(): boolean {
+    
     return !!this.getToken();
   }
 }

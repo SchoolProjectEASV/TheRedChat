@@ -25,7 +25,6 @@ namespace MyRealtimeApp.Api.Hubs
             if (!Guid.TryParse(senderIdStr, out var senderId))
                 return;
 
-            // Ensure the users are friends
             var isFriend = await _dbContext.Friends
                 .AnyAsync(f => f.UserId == senderId && f.FriendUserId == receiverId);
             if (!isFriend)
