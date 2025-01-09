@@ -5,13 +5,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { EncryptionService } from './encryption.service';
 import { jwtDecode } from 'jwt-decode';
-
-interface JwtPayload {
-  'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'?: string;
-  'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'?: string;
-  exp?: number;
-}
-
+import { JwtPayload } from '../models/jwtPayload.model';
 
 
 @Injectable({
@@ -47,7 +41,6 @@ export class AuthService {
       map((response: any) => {
         if (response.token && response.userId) {
           localStorage.setItem(this.tokenKey, response.token);
-          localStorage.setItem('userId', response.userId);
           this.isAuthenticated$.next(true);
         }
         return response;

@@ -94,7 +94,6 @@ private registerOnServerEvents() {
       this.messages$.next([...currentMessages, newMessage]);
     } catch (err) {
       console.error('Error processing received message:', err);
-      // Still add the message but mark it as unreadable
       const newMessage: Message = {
         senderId,
         content: '[Failed to decrypt message]',
