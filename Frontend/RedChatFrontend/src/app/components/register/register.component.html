@@ -1,6 +1,6 @@
 <div class="register-container">
-  <!-- Registration Form -->
   <div *ngIf="!showKeyBackup">
+    <h1 class="project-title">TheRedChat</h1>
     <h2>Register</h2>
     <form (submit)="onSubmit()">
       <div class="form-group">
@@ -11,6 +11,9 @@
       <div class="form-group">
         <label for="password">Password</label>
         <input type="password" id="password" [(ngModel)]="password" name="password" required placeholder="Enter a password" [disabled]="isRegistering" />
+        <div *ngIf="passwordErrors.length > 0" class="error-message">
+          <small *ngFor="let error of passwordErrors">{{ error }}</small>
+        </div>
       </div>
 
       <div class="form-group">
@@ -18,9 +21,7 @@
         <input type="password" id="confirmPassword" [(ngModel)]="confirmPassword" name="confirmPassword" required placeholder="Confirm your password" [disabled]="isRegistering" />
       </div>
 
-      <div class="error-message" *ngIf="errorMessage">
-        {{ errorMessage }}
-      </div>
+      <div class="error-message" *ngIf="errorMessage">{{ errorMessage }}</div>
 
       <div class="actions">
         <button type="submit" class="submit-btn" [disabled]="isRegistering">
@@ -33,10 +34,10 @@
   <div *ngIf="showKeyBackup" class="key-backup-container">
     <h2>Save Your Private Key</h2>
     <p class="warning">
-      This is your private key. You will need it to decrypt messages. 
+      This is your private key. You will need it to decrypt messages.
       Save it securely - it cannot be recovered if lost!
     </p>
-    
+
     <div class="key-display">
       <pre class="key-text">{{ privateKey }}</pre>
     </div>

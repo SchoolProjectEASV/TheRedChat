@@ -1,17 +1,17 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
-import { FormsModule } from '@angular/forms'; 
-import { CommonModule } from '@angular/common'; 
+import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-register',
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.css'],
-  standalone: true, 
+  standalone: true,
   imports: [
-    FormsModule, 
-    CommonModule   
+    FormsModule,
+    CommonModule
   ]
 })
 export class RegisterComponent {
@@ -20,6 +20,7 @@ export class RegisterComponent {
   confirmPassword = '';
   isRegistering = false;
   errorMessage = '';
+  passwordErrors: string[] = [];
   showKeyBackup = false;
   privateKey = '';
   hasBackedUpKey = false;
@@ -31,7 +32,12 @@ export class RegisterComponent {
 
   async onSubmit() {
     if (this.password !== this.confirmPassword) {
-      this.errorMessage = 'Passwords do not match';
+      this.errorMessage = 'Passwords do not match.';
+      return;
+    }
+
+    if (!this.validatePassword(this.password)) {
+      this.errorMessage = this.passwordErrors.join(' ');
       return;
     }
 
@@ -40,7 +46,7 @@ export class RegisterComponent {
 
     try {
       const response = await this.authService.register(
-        this.username, 
+        this.username,
         this.password
       ).toPromise();
 
@@ -51,6 +57,25 @@ export class RegisterComponent {
     } finally {
       this.isRegistering = false;
     }
+  }
+
+  validatePassword(password: string): boolean {
+    this.passwordErrors = [];  // Reset password errors
+
+    if (password.length < 6) {
+      this.passwordErrors.push('Password must be at least 6 characters long.');
+    }
+    if (!/[A-Z]/.test(password)) {
+      this.passwordErrors.push('Password must contain at least one uppercase letter.');
+    }
+    if (!/[a-z]/.test(password)) {
+      this.passwordErrors.push('Password must contain at least one lowercase letter.');
+    }
+    if (!/\d/.test(password)) {
+      this.passwordErrors.push('Password must contain at least one digit.');
+    }
+
+    return this.passwordErrors.length === 0;
   }
 
   downloadPrivateKey() {
@@ -70,20 +95,20 @@ export class RegisterComponent {
       await navigator.clipboard.writeText(this.privateKey);
       alert('Private key copied to clipboard');
     } catch (error) {
-      alert('Failed to copy to clipboard. Please use the download button instead.');
+      alert('Failed to copy to clipboard. Please use the download button instead');
     }
   }
 
   continueToLogin() {
     if (!this.hasBackedUpKey) {
-      alert('Please confirm that you have backed up your private key');
+      alert('Please confirm that you have backed up your private key.');
       return;
     }
-    
+
     this.privateKey = '';
     this.password = '';
     this.confirmPassword = '';
-    
+
     this.router.navigate(['/login']);
   }
 }
