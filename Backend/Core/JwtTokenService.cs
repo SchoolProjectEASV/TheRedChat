@@ -31,7 +31,7 @@ namespace Core
             var creds = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
-                expires: DateTime.UtcNow.AddHours(2),
+                expires: DateTime.UtcNow.AddHours(1),
                 signingCredentials: creds,
                 claims: claims
             );
