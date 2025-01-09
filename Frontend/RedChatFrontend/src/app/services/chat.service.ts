@@ -114,11 +114,11 @@ async sendMessage(receiverId: string, content: string) {
   }
 
   try {
-    const senderId = this.authService.getUserId(); // Add this
+    const senderId = this.authService.getUserId();
     const encryptedContent = await this.encryptionService.encryptMessage(
-      content, 
-      receiverId,
-      senderId  // Add this
+        content, 
+        receiverId,
+        senderId
     );
     
     await this.hubConnection.invoke('SendMessage', receiverId, encryptedContent);

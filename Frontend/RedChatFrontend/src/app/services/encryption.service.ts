@@ -48,90 +48,70 @@ export class EncryptionService {
     return publicKey;
   }
 
-  async encryptMessage(message: string, recipientId: string, senderId: string): Promise<string> {
-    const recipientPublicKey = await this.getFriendPublicKey(recipientId);
-    const senderPublicKey = await this.getFriendPublicKey(senderId);
+async encryptMessage(message: string, recipientId: string, senderId: string): Promise<string> {
+  const recipientPublicKey = await this.getFriendPublicKey(recipientId);
+  const senderPublicKey = await this.getFriendPublicKey(senderId);
 
-    const aesKey = forge.random.getBytesSync(32);
-    const iv = forge.random.getBytesSync(16);
+  const aesKey = forge.random.getBytesSync(32);
+  const iv = forge.random.getBytesSync(16);
 
-    const cipher = forge.cipher.createCipher('AES-CBC', aesKey);
-    cipher.start({iv: iv});
-    cipher.update(forge.util.createBuffer(message, 'utf8'));
-    cipher.finish();
-    const encryptedMessage = cipher.output.getBytes();
+  const cipher = forge.cipher.createCipher('AES-CBC', aesKey);
+  cipher.start({iv: iv});
+  cipher.update(forge.util.createBuffer(message, 'utf8'));
+  cipher.finish();
+  
+  const encryptedMessage = cipher.output.getBytes();
 
-    const recipientEncryptedKey = recipientPublicKey.encrypt(aesKey);
-    const senderEncryptedKey = senderPublicKey.encrypt(aesKey);
+  const recipientEncryptedKey = recipientPublicKey.encrypt(aesKey);
+  const senderEncryptedKey = senderPublicKey.encrypt(aesKey);
 
-    const combined = [
-        forge.util.encode64(iv),
-        forge.util.encode64(recipientEncryptedKey),
-        forge.util.encode64(senderEncryptedKey),
-        forge.util.encode64(encryptedMessage)
-    ].join('|');
+  const combined = [
+      forge.util.encode64(iv),
+      forge.util.encode64(recipientEncryptedKey),
+      forge.util.encode64(senderEncryptedKey),
+      forge.util.encode64(encryptedMessage)
+  ].join('|');
 
-    return combined;
+  return combined;
 }
 
 async decryptMessage(encryptedData: string): Promise<string> {
-    if (!this.privateKey) {
-        throw new Error('Private key not provided. Please input your private key.');
-    }
+  if (!this.privateKey) {
+      throw new Error('Private key not provided. Please input your private key.');
+  }
 
-    try {
-        console.log('Attempting to decrypt:', encryptedData);
-        
-        if (!encryptedData || typeof encryptedData !== 'string') {
-            throw new Error('Invalid encrypted data format');
-        }
+  try {
+      const [iv64, recipientKey64, senderKey64, message64] = encryptedData.split('|');
+      
+      let aesKey;
+      try {
+          const decodedRecipientKey = forge.util.decode64(recipientKey64);
+          aesKey = this.privateKey.decrypt(decodedRecipientKey);
+      } catch {
+          try {
+              const decodedSenderKey = forge.util.decode64(senderKey64);
+              aesKey = this.privateKey.decrypt(decodedSenderKey);
+          } catch {
+              throw new Error('Could not decrypt message with either key');
+          }
+      }
 
-        const parts = encryptedData.split('|');
-        if (parts.length !== 3) {
-            throw new Error(`Expected 3 parts in encrypted data, got ${parts.length}`);
-        }
+      const decodedIv = forge.util.decode64(iv64);
+      const decodedMessage = forge.util.decode64(message64);
 
-        const [iv64, key64, message64] = parts;
-        
-        if (!iv64 || !key64 || !message64) {
-            throw new Error('Missing required encryption components');
-        }
+      const decipher = forge.cipher.createDecipher('AES-CBC', aesKey);
+      decipher.start({iv: decodedIv});
+      decipher.update(forge.util.createBuffer(decodedMessage));
+      
+      if (!decipher.finish()) {
+          throw new Error('Failed to decrypt message');
+      }
 
-        try {
-            const decodedIv = forge.util.decode64(iv64);
-            const decodedKey = forge.util.decode64(key64);
-            const decodedMessage = forge.util.decode64(message64);
-
-            console.log('Successfully decoded base64 components');
-
-            try {
-                const aesKey = this.privateKey.decrypt(decodedKey);
-                console.log('Successfully decrypted AES key');
-
-                const decipher = forge.cipher.createDecipher('AES-CBC', aesKey);
-                decipher.start({iv: decodedIv});
-                decipher.update(forge.util.createBuffer(decodedMessage));
-                
-                if (!decipher.finish()) {
-                    throw new Error('Decipher finish failed');
-                }
-
-                const result = decipher.output.toString();
-                console.log('Successfully decrypted message:', result);
-                return result;
-
-            } catch (decryptError) {
-                console.error('Error during AES decryption:', decryptError);
-                throw decryptError;
-            }
-        } catch (decodeError) {
-            console.error('Error during base64 decoding:', decodeError);
-            throw decodeError;
-        }
-    } catch (error) {
-        console.error('Decryption error:', error);
-        throw null
-    }
+      return decipher.output.toString();
+  } catch (error) {
+      console.error('Decryption error:', error);
+      throw new Error('Failed to decrypt message');
+  }
 }
 
   isInitialized(): boolean {
