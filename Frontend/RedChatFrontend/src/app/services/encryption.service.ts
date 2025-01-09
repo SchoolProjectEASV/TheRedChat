@@ -48,60 +48,91 @@ export class EncryptionService {
     return publicKey;
   }
 
-  async encryptMessage(message: string, recipientId: string): Promise<string> {
+  async encryptMessage(message: string, recipientId: string, senderId: string): Promise<string> {
     const recipientPublicKey = await this.getFriendPublicKey(recipientId);
+    const senderPublicKey = await this.getFriendPublicKey(senderId);
 
     const aesKey = forge.random.getBytesSync(32);
     const iv = forge.random.getBytesSync(16);
 
     const cipher = forge.cipher.createCipher('AES-CBC', aesKey);
     cipher.start({iv: iv});
-
     cipher.update(forge.util.createBuffer(message, 'utf8'));
     cipher.finish();
     const encryptedMessage = cipher.output.getBytes();
 
-    const encryptedKey = recipientPublicKey.encrypt(aesKey);
+    const recipientEncryptedKey = recipientPublicKey.encrypt(aesKey);
+    const senderEncryptedKey = senderPublicKey.encrypt(aesKey);
 
-    const combined = {
-      iv: forge.util.encode64(iv),
-      key: forge.util.encode64(encryptedKey),
-      message: forge.util.encode64(encryptedMessage)
-    };
+    const combined = [
+        forge.util.encode64(iv),
+        forge.util.encode64(recipientEncryptedKey),
+        forge.util.encode64(senderEncryptedKey),
+        forge.util.encode64(encryptedMessage)
+    ].join('|');
 
-    return JSON.stringify(combined);
-  }
+    return combined;
+}
 
-  async decryptMessage(encryptedData: string): Promise<string> {
+async decryptMessage(encryptedData: string): Promise<string> {
     if (!this.privateKey) {
-      throw new Error('Private key not provided. Please input your private key.');
+        throw new Error('Private key not provided. Please input your private key.');
     }
 
     try {
-      const { iv, key, message } = JSON.parse(encryptedData);
+        console.log('Attempting to decrypt:', encryptedData);
+        
+        if (!encryptedData || typeof encryptedData !== 'string') {
+            throw new Error('Invalid encrypted data format');
+        }
 
-      const decodedIv = forge.util.decode64(iv);
-      const decodedKey = forge.util.decode64(key);
-      const decodedMessage = forge.util.decode64(message);
+        const parts = encryptedData.split('|');
+        if (parts.length !== 3) {
+            throw new Error(`Expected 3 parts in encrypted data, got ${parts.length}`);
+        }
 
-      const aesKey = this.privateKey.decrypt(decodedKey);
+        const [iv64, key64, message64] = parts;
+        
+        if (!iv64 || !key64 || !message64) {
+            throw new Error('Missing required encryption components');
+        }
 
-      const decipher = forge.cipher.createDecipher('AES-CBC', aesKey);
-      decipher.start({iv: decodedIv});
+        try {
+            const decodedIv = forge.util.decode64(iv64);
+            const decodedKey = forge.util.decode64(key64);
+            const decodedMessage = forge.util.decode64(message64);
 
-      decipher.update(forge.util.createBuffer(decodedMessage));
-      const success = decipher.finish();
+            console.log('Successfully decoded base64 components');
 
-      if (!success) {
-        throw new Error('Failed to decrypt message');
-      }
+            try {
+                const aesKey = this.privateKey.decrypt(decodedKey);
+                console.log('Successfully decrypted AES key');
 
-      return decipher.output.toString();
+                const decipher = forge.cipher.createDecipher('AES-CBC', aesKey);
+                decipher.start({iv: decodedIv});
+                decipher.update(forge.util.createBuffer(decodedMessage));
+                
+                if (!decipher.finish()) {
+                    throw new Error('Decipher finish failed');
+                }
+
+                const result = decipher.output.toString();
+                console.log('Successfully decrypted message:', result);
+                return result;
+
+            } catch (decryptError) {
+                console.error('Error during AES decryption:', decryptError);
+                throw decryptError;
+            }
+        } catch (decodeError) {
+            console.error('Error during base64 decoding:', decodeError);
+            throw decodeError;
+        }
     } catch (error) {
-      console.error('Decryption error:', error);
-      throw new Error('Failed to decrypt message');
+        console.error('Decryption error:', error);
+        throw null
     }
-  }
+}
 
   isInitialized(): boolean {
     return this.privateKey !== null;
