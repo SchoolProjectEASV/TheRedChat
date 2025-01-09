@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import {firstValueFrom} from "rxjs";
+import { firstValueFrom } from "rxjs";
 
 @Component({
   selector: 'app-register',
@@ -20,6 +20,7 @@ export class RegisterComponent {
   password = '';
   confirmPassword = '';
   isRegistering = false;
+  isGeneratingKeys = false;
   errorMessage = '';
   passwordErrors: string[] = [];
   showKeyBackup = false;
@@ -30,6 +31,16 @@ export class RegisterComponent {
     private authService: AuthService,
     private router: Router
   ) {}
+
+  getButtonText(): string {
+    if (this.isGeneratingKeys) {
+      return 'Generating Keys...';
+    }
+    if (this.isRegistering) {
+      return 'Creating Account...';
+    }
+    return 'Register';
+  }
 
   async onSubmit() {
     if (this.password !== this.confirmPassword) {
@@ -58,15 +69,32 @@ export class RegisterComponent {
     this.errorMessage = '';
 
     try {
-      const response = await firstValueFrom(this.authService.register(this.username, this.password));
-      this.privateKey = response.privateKey;
-      this.showKeyBackup = true;
+      this.authService.register(this.username, this.password).subscribe({
+        next: (response) => {
+          console.log('Registration response:', response);
+          
+          if (response.status === 'generating-keys') {
+            this.isGeneratingKeys = true;
+          } else if (response.status === 'complete') {
+            this.isGeneratingKeys = false;
+            this.privateKey = response.data.privateKey;
+            this.showKeyBackup = true;
+            this.isRegistering = false;
+          }
+        },
+        error: (error) => {
+          console.error('Registration error:', error);
+          this.errorMessage = error.error?.message || 'Registration failed. Please try again.';
+          this.isRegistering = false;
+          this.isGeneratingKeys = false;
+        }
+      });
     } catch (error: any) {
       this.errorMessage = error.error?.message || 'Registration failed. Please try again.';
-    } finally {
       this.isRegistering = false;
+      this.isGeneratingKeys = false;
     }
-  }
+}
 
   validatePassword(password: string): boolean {
     this.passwordErrors = [];

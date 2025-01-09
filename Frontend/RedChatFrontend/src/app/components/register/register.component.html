@@ -5,12 +5,12 @@
     <form (submit)="onSubmit()">
       <div class="form-group">
         <label for="username">Username</label>
-        <input type="text" id="username" [(ngModel)]="username" name="username" required placeholder="Enter your username" [disabled]="isRegistering" />
+        <input type="text" id="username" [(ngModel)]="username" name="username" required placeholder="Enter your username" [disabled]="isRegistering || isGeneratingKeys" />
       </div>
 
       <div class="form-group">
         <label for="password">Password</label>
-        <input type="password" id="password" [(ngModel)]="password" name="password" required placeholder="Enter a password" [disabled]="isRegistering" />
+        <input type="password" id="password" [(ngModel)]="password" name="password" required placeholder="Enter a password" [disabled]="isRegistering || isGeneratingKeys" />
         <div *ngIf="passwordErrors.length > 0" class="error-message">
           <small *ngFor="let error of passwordErrors">{{ error }}</small>
         </div>
@@ -18,14 +18,21 @@
 
       <div class="form-group">
         <label for="confirmPassword">Confirm Password</label>
-        <input type="password" id="confirmPassword" [(ngModel)]="confirmPassword" name="confirmPassword" required placeholder="Confirm your password" [disabled]="isRegistering" />
+        <input type="password" id="confirmPassword" [(ngModel)]="confirmPassword" name="confirmPassword" required placeholder="Confirm your password" [disabled]="isRegistering || isGeneratingKeys" />
       </div>
 
       <div class="error-message" *ngIf="errorMessage">{{ errorMessage }}</div>
 
+      <!-- Add loading indicator -->
+      <div *ngIf="isGeneratingKeys" class="key-generation-status">
+        <div class="loading-spinner"></div>
+        <p>Generating secure encryption keys...</p>
+        <p class="sub-text">This may take up to 10 seconds</p>
+      </div>
+
       <div class="actions">
-        <button type="submit" class="submit-btn" [disabled]="isRegistering">
-          {{ isRegistering ? 'Registering...' : 'Register' }}
+        <button type="submit" class="submit-btn" [disabled]="isRegistering || isGeneratingKeys">
+          {{ getButtonText() }}
         </button>
       </div>
     </form>

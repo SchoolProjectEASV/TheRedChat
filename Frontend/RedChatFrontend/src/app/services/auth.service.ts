@@ -23,18 +23,38 @@ export class AuthService {
   ) {}
 
   register(username: string, password: string): Observable<any> {
-    const { privateKeyPem, publicKeyPem } = this.encryptionService.generateNewKeyPair();
-    return this.http.post(`${this.apiUrl}/register`, { 
-      username, 
-      password,
-      publicKey: publicKeyPem 
-    }).pipe(
-      map(response => ({
-        ...response,
-        privateKey: privateKeyPem
-      }))
-    );
-  }
+    return new Observable(observer => {
+      observer.next({ status: 'generating-keys' });
+      
+      setTimeout(() => {
+        try {
+          const { privateKeyPem, publicKeyPem } = this.encryptionService.generateNewKeyPair();
+          
+          this.http.post(`${this.apiUrl}/register`, { 
+            username, 
+            password,
+            publicKey: publicKeyPem 
+          }).subscribe({
+            next: (response) => {
+              observer.next({ 
+                status: 'complete', 
+                data: {
+                  ...response,
+                  privateKey: privateKeyPem
+                }
+              });
+              observer.complete();
+            },
+            error: (error) => {
+              observer.error(error);
+            }
+          });
+        } catch (error) {
+          observer.error(error);
+        }
+      }, 100); // Small delay to ensure UI updates
+    });
+}
 
   getAllUsernames(): Observable<string[]> {
     return this.http.get<string[]>(`${this.apiUrl}/getUsernames`);
