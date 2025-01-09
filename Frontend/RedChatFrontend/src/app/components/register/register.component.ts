@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import {firstValueFrom} from "rxjs";
 
 @Component({
   selector: 'app-register',
@@ -41,15 +42,23 @@ export class RegisterComponent {
       return;
     }
 
+    try {
+      const existingUsernames = await firstValueFrom(this.authService.getAllUsernames());
+
+      if (existingUsernames && existingUsernames.includes(this.username)) {
+        this.errorMessage = 'Username is already taken. Please choose another one.';
+        return;
+      }
+    } catch (error) {
+      this.errorMessage = 'Error checking username availability. Please try again.';
+      return;
+    }
+
     this.isRegistering = true;
     this.errorMessage = '';
 
     try {
-      const response = await this.authService.register(
-        this.username,
-        this.password
-      ).toPromise();
-
+      const response = await firstValueFrom(this.authService.register(this.username, this.password));
       this.privateKey = response.privateKey;
       this.showKeyBackup = true;
     } catch (error: any) {
@@ -60,7 +69,7 @@ export class RegisterComponent {
   }
 
   validatePassword(password: string): boolean {
-    this.passwordErrors = [];  // Reset password errors
+    this.passwordErrors = [];
 
     if (password.length < 6) {
       this.passwordErrors.push('Password must be at least 6 characters long.');

@@ -81,11 +81,24 @@ namespace MyRealtimeApp.Api.Controllers
         }
 
         [HttpGet("getUsernames")]
-        public async Task<IActionResult> GetAllUsernames()
+        public async Task<ActionResult<List<string>>> GetUsernames()
         {
-            var users = await _userManager.Users.ToListAsync();
-            var usernames = users.Select(u => u.UserName).ToList();
-            return Ok(usernames);
+            try
+            {
+                var users = _userManager.Users.ToList(); 
+                var usernames = users.Select(u => u.UserName).ToList(); 
+
+                if (usernames == null || !usernames.Any())
+                {
+                    return NoContent(); 
+                }
+
+                return Ok(usernames); 
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal server error: " + ex.Message); 
+            }
         }
 
         private string GenerateJwtToken(User user)
