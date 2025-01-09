@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.IdentityModel.Tokens;
 using Models.DTOs;
 using Microsoft.AspNetCore.Authorization;
+using System.Data.Entity;
 
 namespace MyRealtimeApp.Api.Controllers
 {
@@ -79,6 +80,13 @@ namespace MyRealtimeApp.Api.Controllers
             return Ok(new { publicKey = user.PublicKey });
         }
 
+        [HttpGet("getUsernames")]
+        public async Task<IActionResult> GetAllUsernames()
+        {
+            var users = await _userManager.Users.ToListAsync();
+            var usernames = users.Select(u => u.UserName).ToList();
+            return Ok(usernames);
+        }
 
         private string GenerateJwtToken(User user)
         {

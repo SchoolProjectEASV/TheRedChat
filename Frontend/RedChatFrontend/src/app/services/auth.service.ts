@@ -33,6 +33,11 @@ export class AuthService {
     );
   }
 
+  getAllUsernames(): Observable<string[]> {
+    return this.http.get<string[]>(`${this.apiUrl}/getUsernames`);
+  }
+
+
   login(username: string, password: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/login`, { username, password }).pipe(
       map((response: any) => {
