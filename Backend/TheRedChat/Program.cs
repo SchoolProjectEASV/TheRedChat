@@ -9,6 +9,7 @@ using MyRealtimeApp.Api.Hubs;
 using System.Text;
 using Infrastructure.Interfaces;
 using Core.Interfaces;
+using System.Security.Cryptography;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,7 +29,6 @@ builder.Services.AddIdentity<User, IdentityRole<Guid>>(options =>
 .AddEntityFrameworkStores<AppDbContext>()
 .AddDefaultTokenProviders();
 
-// Configure JWT Authentication
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -36,13 +36,27 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
+    var rsa = RSA.Create();
+    var publicKeyPem = builder.Configuration["JwtSettings:PublicKey"]
+        ?.Replace("-----BEGIN PUBLIC KEY-----", "")
+        .Replace("-----END PUBLIC KEY-----", "")
+        .Replace("\n", "");
+
+    if (!string.IsNullOrEmpty(publicKeyPem))
+    {
+        var keyBytes = Convert.FromBase64String(publicKeyPem);
+        rsa.ImportSubjectPublicKeyInfo(keyBytes, out _);
+    }
+
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:SecretKey"])),
-        ValidateIssuer = false,
-        ValidateAudience = false
+        IssuerSigningKey = new RsaSecurityKey(rsa),
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
+        ValidAudience = builder.Configuration["JwtSettings:Audience"],
+        ClockSkew = TimeSpan.Zero
     };
 
     options.Events = new JwtBearerEvents
@@ -51,7 +65,6 @@ builder.Services.AddAuthentication(options =>
         {
             var accessToken = context.Request.Query["access_token"];
             var path = context.HttpContext.Request.Path;
-
             if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/chathub"))
             {
                 context.Token = accessToken;
@@ -67,7 +80,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigins", policy =>
     {
-        policy.WithOrigins("http://localhost:4200") 
+        policy.WithOrigins("http://localhost:4200", "http://localhost:8080") 
               .AllowAnyMethod()
               .AllowAnyHeader()
               .AllowCredentials();
@@ -80,6 +93,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IFriendService, FriendService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<IMessageRepo, MessageRepo>();
+builder.Services.AddSingleton<JwtTokenService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

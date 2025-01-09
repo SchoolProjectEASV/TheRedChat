@@ -11,6 +11,8 @@ namespace Core.Interfaces
 
         Task<bool> ValidateUserCredentials(string username, string password);
 
+        Task<List<User>> GetAllUsers();
+
 
     }
 }
