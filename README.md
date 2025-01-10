@@ -35,6 +35,8 @@ The structure should be like this:
   }
 }
 ```
+#### To create the PublicKey and PrivateKey you can use [RSA Key Generator](https://cryptotools.net/rsagen) with 2048 bits.
+
 ### How to run the application
 Use the following command to run the application:
 ```
