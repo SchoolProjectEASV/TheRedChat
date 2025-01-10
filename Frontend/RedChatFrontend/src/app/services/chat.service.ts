@@ -7,6 +7,15 @@ import { EncryptionService } from './encryption.service';
 import { map, switchMap } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 
+/**
+ * the ChatService is responsible for managing real-time chat functionality using SignalR.
+ * Handles encrypted message sending, receiving, and historical message retrieval.
+ * 
+ * @remarks
+ * This service integrates with SignalR for real-time communication and uses the
+ * EncryptionService to ensure end-to-end encryption of all messages.
+ */
+
 
 @Injectable({
   providedIn: 'root',
@@ -21,6 +30,13 @@ export class ChatService {
     private authService: AuthService
   ) {}
 
+    /**
+   * Initializes and starts the SignalR connection with the chat hub.
+   * Sets up automatic reconnection and registers server event handlers.
+   * 
+   * @param token - Authentication token for securing the connection
+   */
+  
   startConnection(token: string) {
     this.hubConnection = new signalR.HubConnectionBuilder()
       .withUrl('http://localhost:8080/chathub', {
@@ -41,6 +57,17 @@ export class ChatService {
   stopConnection() {
     this.hubConnection?.stop().then(() => console.log('Connection stopped'));
   }
+
+    /**
+   * Retrieves and decrypts historical messages with a specific friend.
+   * 
+   * @param friendId - GUID of the friend
+   * @returns Observable of decrypted messages
+   * 
+   * @remarks
+   * This method fetches encrypted messages from the server and attempts to decrypt
+   * each message. Messages that fail to decrypt will be replaced with an error message.
+   */
 
   getMessagesWithFriend(friendId: string): Observable<Message[]> {
     return this.http.get<Message[]>(`http://localhost:8080/api/messages/${friendId}`).pipe(
@@ -72,6 +99,13 @@ export class ChatService {
       from
     );
 }
+
+  /**
+   * Sets up event handlers for incoming messages from the SignalR hub.
+   * Handles message decryption and updates the messages stream.
+   * 
+   * @private
+   */
 
 private registerOnServerEvents() {
   if (!this.hubConnection) return;

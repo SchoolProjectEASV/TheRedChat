@@ -20,7 +20,7 @@ services:
     ports:
       - "1433:1433"
     volumes:
-      - mssql_data_redchat_sql_db:/var/opt/mssql
+      - mssql_data_redchat_final_sql_db:/var/opt/mssql
 
   redchat-frontend:
     build:
@@ -33,4 +33,4 @@ services:
     restart: always
 
 volumes:
-  mssql_data_redchat_sql_db:
+  mssql_data_redchat_final_sql_db:

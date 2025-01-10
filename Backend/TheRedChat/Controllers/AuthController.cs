@@ -1,125 +1,91 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using Models;
-using System;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.IdentityModel.Tokens;
-using Models.DTOs;
+﻿using Core.Interfaces;
 using Microsoft.AspNetCore.Authorization;
-using System.Data.Entity;
+using Microsoft.AspNetCore.Mvc;
+using Models.DTOs;
+using Models;
 
-namespace MyRealtimeApp.Api.Controllers
+[ApiController]
+[Route("api/[controller]")]
+public class AuthController : ControllerBase
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class AuthController : ControllerBase
+    private readonly IUserService _userService;
+    private readonly JwtTokenService _jwtService;
+
+    public AuthController(IUserService userService, JwtTokenService jwtService)
     {
-        private readonly UserManager<User> _userManager;
-        private readonly IConfiguration _configuration;
+        _userService = userService;
+        _jwtService = jwtService;
+    }
 
-        public AuthController(UserManager<User> userManager, IConfiguration configuration)
+    [HttpPost("register")]
+    public async Task<IActionResult> Register([FromBody] RegisterDTO dto)
+    {
+        var user = new User
         {
-            _userManager = userManager;
-            _configuration = configuration;
-        }
+            UserName = dto.Username,
+            PublicKey = dto.PublicKey
+        };
 
-        [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterDTO dto)
+        try
         {
-            var user = new User
-            {
-                UserName = dto.Username,
-                PublicKey = dto.PublicKey
-            };
-
-            var result = await _userManager.CreateAsync(user, dto.Password);
-
-            if (!result.Succeeded)
-                return BadRequest(result.Errors);
-
+            await _userService.RegisterUser(user, dto.Password);
             return Ok(new { message = "User registered successfully." });
         }
-
-        [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginDTO dto)
+        catch (Exception ex)
         {
-            var user = await _userManager.FindByNameAsync(dto.Username);
-            if (user == null)
-                return Unauthorized("Invalid username or password.");
-
-            var isPasswordValid = await _userManager.CheckPasswordAsync(user, dto.Password);
-            if (!isPasswordValid)
-                return Unauthorized("Invalid username or password.");
-
-            var token = GenerateJwtToken(user);
-            var userId = user.Id;
-
-            return Ok(new
-            {
-                token,
-                userId
-            });
+            return BadRequest(new { errors = ex.Message });
         }
+    }
 
-        [Authorize]
-        [HttpGet("keys/{userId}")]
-        public async Task<IActionResult> GetPublicKey(Guid userId)
+    [HttpPost("login")]
+    public async Task<IActionResult> Login([FromBody] LoginDTO dto)
+    {
+        var isValid = await _userService.ValidateUserCredentials(dto.Username, dto.Password);
+        if (!isValid)
+            return Unauthorized("Invalid username or password.");
+
+        var user = await _userService.GetUserByUsername(dto.Username);
+        var token = _jwtService.GenerateToken(user);
+
+        return Ok(new
         {
-            var user = await _userManager.FindByIdAsync(userId.ToString());
+            token
+        });
+    }
 
-            if (user == null)
-                return NotFound(new { message = "User not found" });
+    [Authorize]
+    [HttpGet("keys/{userId}")]
+    public async Task<IActionResult> GetPublicKey(Guid userId)
+    {
+        var user = await _userService.GetUserById(userId);
 
-            if (string.IsNullOrEmpty(user.PublicKey))
-                return NotFound(new { message = "Public key not found for user" });
+        if (user == null)
+            return NotFound(new { message = "User not found" });
 
-            return Ok(new { publicKey = user.PublicKey });
-        }
+        if (string.IsNullOrEmpty(user.PublicKey))
+            return NotFound(new { message = "Public key not found for user" });
 
-        [HttpGet("getUsernames")]
-        public async Task<ActionResult<List<string>>> GetUsernames()
+        return Ok(new { publicKey = user.PublicKey });
+    }
+
+    [HttpGet("getUsernames")]
+    public async Task<ActionResult<List<string>>> GetUsernames()
+    {
+        try
         {
-            try
+            var users = await _userService.GetAllUsers();
+            var usernames = users.Select(u => u.UserName).ToList();
+
+            if (!usernames.Any())
             {
-                var users = _userManager.Users.ToList(); 
-                var usernames = users.Select(u => u.UserName).ToList(); 
-
-                if (usernames == null || !usernames.Any())
-                {
-                    return NoContent(); 
-                }
-
-                return Ok(usernames); 
+                return NoContent();
             }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "Internal server error: " + ex.Message); 
-            }
+
+            return Ok(usernames);
         }
-
-        private string GenerateJwtToken(User user)
+        catch (Exception ex)
         {
-            var secretKey = Encoding.UTF8.GetBytes(_configuration["JwtSettings:SecretKey"]);
-            var claims = new[]
-            {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Name, user.UserName ?? string.Empty)
-            };
-
-            var creds = new SigningCredentials(new SymmetricSecurityKey(secretKey),
-                SecurityAlgorithms.HmacSha256);
-
-            var token = new JwtSecurityToken(
-                claims: claims,
-                expires: DateTime.UtcNow.AddHours(2),
-                signingCredentials: creds
-            );
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            return StatusCode(500, "Internal server error: " + ex.Message);
         }
     }
 }

@@ -20,14 +20,14 @@ export class LoginComponent {
 
   onSubmit() {
     if (this.username && this.password) {
-      this.authService.login(this.username, this.password).subscribe(
-        () => {
-          this.router.navigate(['/chat']).then(r => ChatComponent);
+      this.authService.login(this.username, this.password).subscribe({
+        next: () => {
+          this.router.navigate(['/chat']); 
         },
-        (error) => {
+        error: (error) => {
           alert('Login failed. Please check your credentials.');
         }
-      );
+      });
     } else {
       alert('Please fill in both username and password.');
     }

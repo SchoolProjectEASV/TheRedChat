@@ -2,6 +2,11 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
+/**
+ * the FriendService is  responsible for managing friend relationships between users.
+ * Provides methods for adding, removing, and retrieving friends.
+ */
+
 @Injectable({
   providedIn: 'root'
 })
