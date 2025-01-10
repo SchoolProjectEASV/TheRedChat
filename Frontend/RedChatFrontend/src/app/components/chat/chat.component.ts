@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NgForOf, NgIf, DatePipe } from '@angular/common';
 import { FriendsService } from '../../services/friends.service';
@@ -8,7 +8,6 @@ import { Message } from '../../models/message.model'
 import { EncryptionService } from '../../services/encryption.service';
 import { KeyInputDialogComponent } from '../keyinputdialog/keyinputdialog.component';
 
-
 @Component({
   selector: 'app-chat',
   standalone: true,
@@ -17,7 +16,7 @@ import { KeyInputDialogComponent } from '../keyinputdialog/keyinputdialog.compon
     NgForOf,
     NgIf,
     DatePipe,
-    KeyInputDialogComponent  
+    KeyInputDialogComponent
   ],
   templateUrl: './chat.component.html',
   styleUrls: ['./chat.component.css']
@@ -32,6 +31,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   messagesPlaceholder = 'Type a message...';
   addFriendPlaceholder = 'Add a friend';
   friendsListTitle = 'Friends';
+  isSidebarOpen = false;  // Sidebar open state
 
   constructor(
     private friendsService: FriendsService,
@@ -76,7 +76,7 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   selectFriend(friend: any) {
     this.selectedFriend = friend;
-  
+
     const userId = this.authService.getUserId();
     this.chatService.getMessagesWithFriend(friend.id).subscribe(
       (historicalMessages) => {
@@ -86,7 +86,7 @@ export class ChatComponent implements OnInit, OnDestroy {
             (msg.senderId === friend.id && msg.receiverId === userId) &&
             !historicalMessages.some((hm) => hm.Id === msg.Id)
         );
-  
+
         this.messages = [
           ...historicalMessages,
           ...liveMessages,
@@ -134,10 +134,50 @@ export class ChatComponent implements OnInit, OnDestroy {
   sendMessage() {
     if (this.selectedFriend && this.newMessage.trim()) {
       this.chatService.sendMessage(this.selectedFriend.id, this.newMessage);
-      this.newMessage = '';
+      this.newMessage = ''; // Clear the input field after sending the message
     }
   }
-  
-  
-  
+
+  toggleSidebar() {
+    this.isSidebarOpen = !this.isSidebarOpen;
+  }
+
+  sendMessageOnEnter(event: Event) {
+    const keyboardEvent = event as KeyboardEvent; // Cast to KeyboardEvent
+    if (keyboardEvent.key === 'Enter') {
+      keyboardEvent.preventDefault(); // Prevent default Enter key behavior (e.g., submitting a form)
+      this.sendMessage(); // Call sendMessage method
+    }
+  }
+
+  // Auto resize textarea based on content
+  autoResize(event: any) {
+    const textarea = event.target;
+    textarea.style.height = 'auto';
+    textarea.style.height = `${textarea.scrollHeight}px`;
+  }
+
+  formatMessage(content: string): string {
+    const words = content.split(' ');
+    if (words.length > 100) {
+      return words.reduce((acc, word, index) => {
+        if (index % 100 === 0 && index !== 0) {
+          acc += '\n'; // Add a line break every 100 words
+        }
+        return acc + word + ' ';
+      }, '');
+    }
+    return content;
+  }
+
+  // Close sidebar if clicked outside of it
+  closeSidebarOnClick(event: MouseEvent) {
+    const sidebar = document.querySelector('.sidebar');
+    const hamburgerButton = document.querySelector('.hamburger-btn');
+
+    // Check if the click was inside the sidebar or hamburger button
+    if (this.isSidebarOpen && sidebar && !sidebar.contains(event.target as Node) && !hamburgerButton?.contains(event.target as Node)) {
+      this.isSidebarOpen = false; // Close the sidebar
+    }
+  }
 }

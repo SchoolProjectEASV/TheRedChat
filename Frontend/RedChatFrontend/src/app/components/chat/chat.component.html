@@ -1,36 +1,36 @@
-<!-- Key input dialog overlay -->
-<app-keyinputdialog 
-  *ngIf="showKeyDialog"
-  (keySubmitted)="onKeySubmitted()"
-></app-keyinputdialog>
-
-<div class="chat-app">
-  <div class="chat-window">
+<div class="chat-app" (click)="closeSidebarOnClick($event)">
+  <!-- Chat Window -->
+  <div class="chat-window" [class.sidebar-open]="isSidebarOpen">
+    <!-- Sticky Header with Hamburger Button -->
     <div class="chat-header">
-      <h2>
-        {{ selectedFriend ? (selectedFriend.username ? 'Chat with ' + selectedFriend.username : '') : 'Select a friend to start chatting' }}
-      </h2>
+      <h2>{{ selectedFriend ? 'Chat with ' + selectedFriend.username : 'Select a friend' }}</h2>
+      <button class="hamburger-btn" (click)="toggleSidebar()">☰</button>
     </div>
+
+    <!-- Chat Messages Section -->
     <div class="chat-messages">
-      <div 
-        *ngFor="let message of messages" 
-        [class]="message.senderId === authService.getUserId() ? 'my-message' : 'friend-message'">
-        <p>
-          <span class="sender">
-            {{ message.senderId === authService.getUserId() ? 'You' : selectedFriend.username }}:
-          </span>
+      <div *ngFor="let message of messages"
+           [class]="message.senderId === authService.getUserId() ? 'my-message' : 'friend-message'">
+        <p><span class="sender">{{ message.senderId === authService.getUserId() ? 'You' : selectedFriend.username }}:</span>
           {{ message.content }}
         </p>
         <small class="message-time">{{ message.sentAt | date: 'short' }}</small>
       </div>
-    </div>    
+    </div>
+
+    <!-- Chat Input Section -->
     <div class="chat-input" *ngIf="selectedFriend">
-      <input [(ngModel)]="newMessage" [placeholder]="messagesPlaceholder" />
+            <textarea [(ngModel)]="newMessage"
+                      [placeholder]="messagesPlaceholder"
+                      (keydown.enter)="sendMessageOnEnter($event)"
+                      (input)="autoResize($event)"
+                      rows="1"></textarea>
       <button (click)="sendMessage()">Send</button>
     </div>
   </div>
 
-  <div class="sidebar">
+  <!-- Sidebar Tray -->
+  <div class="sidebar" [class.open]="isSidebarOpen">
     <div class="friend-list">
       <h3>{{ friendsListTitle }}</h3>
       <ul>
@@ -41,6 +41,7 @@
       </ul>
     </div>
 
+    <!-- Add Friend Section -->
     <div class="add-friend">
       <input [(ngModel)]="newFriend" [placeholder]="addFriendPlaceholder" />
       <button (click)="addFriend()">Add Friend</button>
