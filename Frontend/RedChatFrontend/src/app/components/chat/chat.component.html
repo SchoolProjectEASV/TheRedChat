@@ -1,3 +1,9 @@
+<!-- Key input dialog overlay - keep this outside chat-app div -->
+<app-keyinputdialog 
+  *ngIf="showKeyDialog"
+  (keySubmitted)="onKeySubmitted()"
+></app-keyinputdialog>
+
 <div class="chat-app" (click)="closeSidebarOnClick($event)">
   <!-- Chat Window -->
   <div class="chat-window" [class.sidebar-open]="isSidebarOpen">
@@ -11,7 +17,10 @@
     <div class="chat-messages">
       <div *ngFor="let message of messages"
            [class]="message.senderId === authService.getUserId() ? 'my-message' : 'friend-message'">
-        <p><span class="sender">{{ message.senderId === authService.getUserId() ? 'You' : selectedFriend.username }}:</span>
+        <p>
+          <span class="sender">
+            {{ message.senderId === authService.getUserId() ? 'You' : selectedFriend.username }}:
+          </span>
           {{ message.content }}
         </p>
         <small class="message-time">{{ message.sentAt | date: 'short' }}</small>
@@ -20,11 +29,11 @@
 
     <!-- Chat Input Section -->
     <div class="chat-input" *ngIf="selectedFriend">
-            <textarea [(ngModel)]="newMessage"
-                      [placeholder]="messagesPlaceholder"
-                      (keydown.enter)="sendMessageOnEnter($event)"
-                      (input)="autoResize($event)"
-                      rows="1"></textarea>
+      <textarea [(ngModel)]="newMessage"
+                [placeholder]="messagesPlaceholder"
+                (keydown.enter)="sendMessageOnEnter($event)"
+                (input)="autoResize($event)"
+                rows="1"></textarea>
       <button (click)="sendMessage()">Send</button>
     </div>
   </div>
