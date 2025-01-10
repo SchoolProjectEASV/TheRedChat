@@ -5,7 +5,8 @@ import { RegisterComponent } from './components/register/register.component';
 import { authGuard } from './guard/auth.guard';
 
 export const routes: Routes = [
-  { path: '', component: LoginComponent },
+  { path: '', pathMatch: 'full', component: LoginComponent },
+  { path: 'login', redirectTo: '' },
   { path: 'register', component: RegisterComponent },
   { path: 'chat', component: ChatComponent, canActivate: [authGuard] },
   { path: '**', redirectTo: '' }

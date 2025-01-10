@@ -4,6 +4,7 @@ using Models;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace Core
 {
@@ -14,6 +15,12 @@ namespace Core
         public UserService(UserManager<User> userManager)
         {
             _userManager = userManager;
+        }
+
+        public async Task<List<User>> GetAllUsers()
+        {
+            var users =  await _userManager.Users.ToListAsync();
+            return users;
         }
 
         public async Task<User> GetUserById(Guid id)
