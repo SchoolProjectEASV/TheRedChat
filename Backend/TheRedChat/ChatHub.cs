@@ -19,6 +19,13 @@ namespace MyRealtimeApp.Api.Hubs
             _dbContext = dbContext;
         }
 
+        /// <summary>
+        /// Send a message to a friend. The message is saved in the database and sent to the receiver.
+        /// </summary>
+        /// <param name="receiverId"></param>
+        /// <param name="content"></param>
+        /// <returns></returns>
+        /// <exception cref="HubException"></exception>
         public async Task SendMessage(Guid receiverId, string content)
         {
             var senderIdStr = Context.User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -48,6 +55,10 @@ namespace MyRealtimeApp.Api.Hubs
                 .SendAsync("ReceiveMessage", senderId, receiverId, content, message.SentAt);
         }
 
+        /// <summary>
+        /// Connect the user to their own group when they connect to the hub. This way, we can send messages to the user.
+        /// </summary>
+        /// <returns></returns>
         public override async Task OnConnectedAsync()
         {
             var userId = Context.User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -59,6 +70,11 @@ namespace MyRealtimeApp.Api.Hubs
             await base.OnConnectedAsync();
         }
 
+        /// <summary>
+        /// Disconnect the user from their group when they disconnect from the hub. This way, we can stop sending messages to the user.
+        /// </summary>
+        /// <param name="exception"></param>
+        /// <returns></returns>
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
             var userId = Context.User.FindFirstValue(ClaimTypes.NameIdentifier);

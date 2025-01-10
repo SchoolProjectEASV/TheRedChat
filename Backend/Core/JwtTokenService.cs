@@ -11,6 +11,10 @@ public class JwtTokenService
     private readonly string _issuer;
     private readonly string _audience;
 
+    /// <summary>
+    /// Configuration is used to get the private key from the appsettings.json file and create a new RSA key from it.
+    /// </summary>
+    /// <param name="configuration"></param>
     public JwtTokenService(IConfiguration configuration)
     {
         var privateKeyPem = configuration["JwtSettings:PrivateKey"]
@@ -30,6 +34,11 @@ public class JwtTokenService
         _audience = configuration["JwtSettings:Audience"];
     }
 
+    /// <summary>
+    /// Generates a JWT token for the user. The token is signed with the RSA key. The token contains the user's ID and username. The token has an expiration time of 1 hour.
+    /// </summary>
+    /// <param name="user"></param>
+    /// <returns></returns>
     public string GenerateToken(User user)
     {
         var claims = new List<Claim>
@@ -44,7 +53,7 @@ public class JwtTokenService
             issuer: _issuer,
             audience: _audience,
             claims: claims,
-            expires: DateTime.UtcNow.AddHours(2),
+            expires: DateTime.UtcNow.AddHours(1),
             signingCredentials: creds
         );
 
