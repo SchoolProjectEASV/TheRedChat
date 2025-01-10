@@ -134,7 +134,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   sendMessage() {
     if (this.selectedFriend && this.newMessage.trim()) {
       this.chatService.sendMessage(this.selectedFriend.id, this.newMessage);
-      this.newMessage = ''; // Clear the input field after sending the message
+      this.newMessage = '';
     }
   }
 
@@ -143,14 +143,13 @@ export class ChatComponent implements OnInit, OnDestroy {
   }
 
   sendMessageOnEnter(event: Event) {
-    const keyboardEvent = event as KeyboardEvent; // Cast to KeyboardEvent
+    const keyboardEvent = event as KeyboardEvent;
     if (keyboardEvent.key === 'Enter') {
-      keyboardEvent.preventDefault(); // Prevent default Enter key behavior (e.g., submitting a form)
-      this.sendMessage(); // Call sendMessage method
+      keyboardEvent.preventDefault();
+      this.sendMessage();
     }
   }
 
-  // Auto resize textarea based on content
   autoResize(event: any) {
     const textarea = event.target;
     textarea.style.height = 'auto';
@@ -162,7 +161,7 @@ export class ChatComponent implements OnInit, OnDestroy {
     if (words.length > 100) {
       return words.reduce((acc, word, index) => {
         if (index % 100 === 0 && index !== 0) {
-          acc += '\n'; // Add a line break every 100 words
+          acc += '\n'; 
         }
         return acc + word + ' ';
       }, '');
@@ -170,14 +169,12 @@ export class ChatComponent implements OnInit, OnDestroy {
     return content;
   }
 
-  // Close sidebar if clicked outside of it
   closeSidebarOnClick(event: MouseEvent) {
     const sidebar = document.querySelector('.sidebar');
     const hamburgerButton = document.querySelector('.hamburger-btn');
 
-    // Check if the click was inside the sidebar or hamburger button
     if (this.isSidebarOpen && sidebar && !sidebar.contains(event.target as Node) && !hamburgerButton?.contains(event.target as Node)) {
-      this.isSidebarOpen = false; // Close the sidebar
+      this.isSidebarOpen = false; 
     }
   }
 }
