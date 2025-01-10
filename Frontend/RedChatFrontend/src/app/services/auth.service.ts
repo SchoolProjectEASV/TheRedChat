@@ -87,8 +87,9 @@ export class AuthService {
    */
 
   login(username: string, password: string): Observable<any> {
-    this.logout(); 
-    
+    localStorage.removeItem(this.tokenKey);
+    this.isAuthenticated$.next(false);
+
     return this.http.post(`${this.apiUrl}/login`, { username, password }).pipe(
       map((response: any) => {
         if (response.token) {

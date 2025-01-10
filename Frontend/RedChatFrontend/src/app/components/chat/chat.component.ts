@@ -106,16 +106,16 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   addFriend() {
     if (this.newFriend.trim()) {
-      this.friendsService.addFriend(this.newFriend).subscribe(
-        () => {
-          alert('Friend added successfully!');
+      this.friendsService.addFriend(this.newFriend).subscribe({
+        next: (response) => {
           this.loadFriends();
           this.newFriend = '';
+          alert('Friend added successfully!');
         },
-        (error) => {
-          alert('Failed to add friend.');
+        error: (error) => {
+          alert(error.error || 'Failed to add friend.');
         }
-      );
+      });
     }
   }
 

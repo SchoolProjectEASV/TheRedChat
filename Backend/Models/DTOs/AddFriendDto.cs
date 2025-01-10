@@ -8,6 +8,6 @@ namespace Models.DTOs
 {
     public class AddFriendDto
     {
-        public Guid FriendUserId { get; set; }
+        public string Username { get; set; }
     }
 }

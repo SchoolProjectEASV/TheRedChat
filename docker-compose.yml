@@ -10,7 +10,7 @@ services:
       - TheRedChat-db
     restart: always
     env_file:
-      - .env
+      - Backend/.env
 
   TheRedChat-db:
     image: mcr.microsoft.com/azure-sql-edge:latest
