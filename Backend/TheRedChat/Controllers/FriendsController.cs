@@ -17,10 +17,12 @@ namespace MyRealtimeApp.Api.Controllers
     public class FriendsController : ControllerBase
     {
         private readonly IFriendService _friendService;
+        private readonly IUserService _userService;
 
-        public FriendsController(IFriendService friendService)
+        public FriendsController(IFriendService friendService, IUserService userService)
         {
             _friendService = friendService;
+            _userService = userService;
         }
 
         [Authorize]
@@ -33,7 +35,11 @@ namespace MyRealtimeApp.Api.Controllers
 
             try
             {
-                await _friendService.AddFriend(userId, dto.FriendUserId);
+                var friendUser = await _userService.GetUserByUsername(dto.Username);
+                if (friendUser == null)
+                    return BadRequest("User not found.");
+
+                await _friendService.AddFriend(userId, friendUser.Id);
                 return Ok("Friend added successfully.");
             }
             catch (Exception ex)

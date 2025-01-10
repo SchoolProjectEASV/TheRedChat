@@ -15,9 +15,12 @@ export class FriendsService {
 
   constructor(private http: HttpClient) {}
 
-  addFriend(friendUserId: string): Observable<any> {
-    return this.http.post(`${this.baseUrl}/add`, { friendUserId });
+  addFriend(username: string): Observable<string> {
+    return this.http.post(`${this.baseUrl}/add`, { username }, {
+      responseType: 'text'
+    });
   }
+  
 
   getFriends(): Observable<any[]> {
     return this.http.get<any[]>(`${this.baseUrl}/list`);
