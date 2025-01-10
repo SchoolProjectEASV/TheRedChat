@@ -7,6 +7,13 @@ import { EncryptionService } from './encryption.service';
 import { jwtDecode } from 'jwt-decode';
 import { JwtPayload } from '../models/jwtPayload.model';
 
+/**
+ * The authservice is responsible for handling user authentication, registration, and token management.
+ * 
+ * @remarks
+ * This service manages JWT tokens for authentication, stores them in localStorage,
+ * and provides methods for user registration with public/private key generation.
+ */
 
 @Injectable({
   providedIn: 'root'
@@ -22,6 +29,15 @@ export class AuthService {
     private encryptionService: EncryptionService
   ) {}
 
+   /**
+   * Registers a new user with the application.
+   * Generates a new key pair for end-to-end encryption as part of the registration process.
+   * 
+   * @param username - user's username
+   * @param password - The user's password
+   * @returns Observable that emits registration status updates and final result
+   */
+  
   register(username: string, password: string): Observable<any> {
     return new Observable(observer => {
       observer.next({ status: 'generating-keys' });
@@ -52,7 +68,7 @@ export class AuthService {
         } catch (error) {
           observer.error(error);
         }
-      }, 100); // Small delay to ensure UI updates
+      }, 100);
     });
 }
 
@@ -60,6 +76,15 @@ export class AuthService {
     return this.http.get<string[]>(`${this.apiUrl}/getUsernames`);
   }
 
+
+    /**
+   * Authenticates a user with the application.
+   * Stores the JWT token in localStorage upon authentication.
+   * 
+   * @param username - The user's username
+   * @param password - The user's password
+   * @returns Observable of the login response containing the JWT token
+   */
 
   login(username: string, password: string): Observable<any> {
     this.logout(); 
@@ -75,6 +100,12 @@ export class AuthService {
     );
 }
   
+    /**
+   * Extracts the user ID from the JWT token.
+   * 
+   * @returns The user's unique identifier
+   * @throws Error if token is missing or invalid
+   */
   
   getUserId(): string {
     const token = this.getToken();
